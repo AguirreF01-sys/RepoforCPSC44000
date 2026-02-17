@@ -4,9 +4,9 @@ File Name: main.py
 External Files Required: none
 External Files Created: none
 Programmers: Florentino Aguirre, Deep Tadhani
-Emails: florentinoaguirre@lewisu.edu, <partner@lewisu.edu>
+Emails: florentinoaguirre@lewisu.edu, deepctadhani@lewisu.edu
 Course: Software Engineering CPSC 44000-LT1
-Date Submitted: 02/15/2026
+Date Submitted: 02/17/2026
 Description:
     Prompts the user for n value between 3-11 (inclusive) and k greater than 10. Searches all integer pairs (x,y)
     with 10 <= x <= k and 10 <= y <= k for "near misses" to Fermat's equation
@@ -111,7 +111,7 @@ def nth_root_floor(S: int, n: int) -> int:
     return lo
 
 
-def print_new_best(n: int, x: int, y: int, z: int, miss: int, rel: float, S: int) -> None:
+def print_new_best(n: int, x: int, y: int, z: int, miss: int, rel: float, S: int, z_power: int, final: bool = False) -> None:
     """
     Prints a labeled report for a newly discovered best near miss.
 
@@ -120,16 +120,18 @@ def print_new_best(n: int, x: int, y: int, z: int, miss: int, rel: float, S: int
 
     Output includes:
     - n, x, y, computed S
-    - the bracketing z value
+    - the closest z value found
     - miss (closest distance to z^n or (z+1)^n)
     - relative miss (miss / S), shown as a decimal and percent
     """
-    print("\nNEW SMALLEST RELATIVE MISS FOUND")
+    header = "FINAL BEST NEAR MISS" if final else "NEW SMALLEST RELATIVE MISS FOUND"
+    print(f"\n{header}")
     print(f"n = {n}")
     print(f"x = {x}")
     print(f"y = {y}")
     print(f"S = x^n + y^n = {S}")
-    print(f"z = {z}")
+    print(f"closest z = {z}")
+    print(f"z^n (closest) = {z_power}")
     print(f"miss (integer) = {miss}")
     print(f"relative miss = {rel:.12g}  ({rel*100:.10g}%)")
 
@@ -145,6 +147,7 @@ def main() -> None:
        - Compute S = x^n + y^n
        - Find z = floor(S^(1/n)) so that z^n <= S < (z+1)^n
        - Compute miss = min(S - z^n, (z+1)^n - S)
+       - Choose closest_z based on which miss is smaller (z or z+1)
        - Compute relative miss = miss / S
     4) Track the smallest relative miss found so far.
        Whenever a new smallest relative miss is found, print the labeled result.
@@ -155,7 +158,7 @@ def main() -> None:
     k = read_k()
 
     best_rel: float = float("inf")
-    best_record: Optional[Tuple[int, int, int, int, float, int]] = None  # (x, y, z, miss, rel, S)
+    best_record: Optional[Tuple[int, int, int, int, float, int, int]] = None  # (x, y, z, miss, rel, S, z_power)
 
     # Loop purpose: test all x values in the required range 10..k
     for x in range(10, k + 1):
@@ -174,21 +177,30 @@ def main() -> None:
             # Tricky statement: miss is the smaller distance from S to the bracketing powers
             m1 = S - lower
             m2 = upper - S
-            miss = m1 if m1 <= m2 else m2
+
+            # Determine which is smaller: m1 or m2, and set miss and closest_z accordingly
+            if m1 <= m2:
+                miss = m1
+                closest_z = z
+                closest_power = lower
+            else:
+                miss = m2
+                closest_z = z + 1
+                closest_power = upper
 
             rel = miss / S
 
             # If we found a smaller relative miss, record it and print it
             if rel < best_rel:
                 best_rel = rel
-                best_record = (x, y, z, miss, rel, S)
-                print_new_best(n, x, y, z, miss, rel, S)
+                best_record = (x, y, closest_z, miss, rel, S, closest_power)
+                print_new_best(n, x, y, closest_z, miss, rel, S, closest_power)
 
     # Ensure the smallest miss is the last thing printed
     if best_record is not None:
-        x, y, z, miss, rel, S = best_record
-        print("\nFINAL BEST (should be last output)")
-        print_new_best(n, x, y, z, miss, rel, S)
+        x, y, z, miss, rel, S, closest_power = best_record
+        # print("\nFINAL BEST (should be last output)")
+        print_new_best(n, x, y, z, miss, rel, S, closest_power, final=True)
 
     # Pause so the user can examine the output in PyCharm
     input("\nPress Enter to exit...")
