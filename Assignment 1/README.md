@@ -29,6 +29,6 @@ While exact solutions do not exist for \( n > 2 \), this program searches for co
 ```bash
 python main.py
 
-If using macOS/Linux and python defaults to Python 2:
-```bash
+// If using macOS/Linux and python defaults to Python 2:
+
 python3 main.py
