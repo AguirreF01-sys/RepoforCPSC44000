@@ -8,6 +8,7 @@ class Simulation:
         self.players = players
         self.stats = Stats()
         self.finished = False
+        self.message = ""
 
     def step(self):
 
@@ -27,8 +28,16 @@ class Simulation:
 
         if p1.position() == p2.position():
             self.finished = True
+            self.message = "They met!"
 
             print("\n Players met!")
             print(f"Total simulation steps: {self.stats.steps}")
             print(f"Player 1 moves: {p1.moves}")
             print(f"Player 2 moves: {p2.moves}")
+
+    def reset(self):
+        for p in self.players:
+            p.reset()
+        self.stats.reset()
+        self.finished = False
+        self.message = ""

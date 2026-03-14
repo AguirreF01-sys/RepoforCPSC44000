@@ -9,8 +9,15 @@ from game.simulation import Simulation
 CELL_SIZE = 60
 GRID_SIZE = 6
 
+TOP_BAR_HEIGHT = 80 # space for counters and messages
+
 WIDTH = GRID_SIZE * CELL_SIZE
-HEIGHT = GRID_SIZE * CELL_SIZE
+HEIGHT = GRID_SIZE * CELL_SIZE + TOP_BAR_HEIGHT
+
+BG_COLOR = (34, 139, 34)
+GRID_COLOR = (200, 200, 200)
+TEXT_COLOR = (255, 255, 255)
+MESSAGE_COLOR = (255, 215, 0)
 
 
 pygame.init()
@@ -21,16 +28,20 @@ pygame.display.set_caption("Wandering in the Woods")
 
 clock = pygame.time.Clock()
 
+# Create the simulation
+font = pygame.font.SysFont(None, 30)
+big_font = pygame.font.SysFont(None, 48)
 
 grid = Grid(GRID_SIZE, GRID_SIZE)
 
 # Create two players at opposite corners
 # Red player starts at top-left, Blue player starts at bottom-right
-p1 = Player(1, 0, 0, (255,0,0))
-p2 = Player(2, GRID_SIZE-1, GRID_SIZE-1, (0,0,255))
+p1 = Player(1, 0, 0, (255, 0, 0))
+p2 = Player(2, GRID_SIZE - 1, GRID_SIZE - 1, (0, 0, 255))
 
 simulation = Simulation(grid, [p1,p2])
 
+running_simulation = True
 
 def draw_grid():
 
@@ -39,12 +50,12 @@ def draw_grid():
 
             rect = pygame.Rect(
                 c*CELL_SIZE,
-                r*CELL_SIZE,
+                TOP_BAR_HEIGHT + r * CELL_SIZE, # Adjust for top bar
                 CELL_SIZE,
                 CELL_SIZE
             )
 
-            pygame.draw.rect(screen,(200,200,200),rect,1)
+            pygame.draw.rect(screen,GRID_COLOR,rect,1)
 
 
 def draw_players():
@@ -52,26 +63,53 @@ def draw_players():
     for p in simulation.players:
 
         x = p.col*CELL_SIZE + CELL_SIZE//2
-        y = p.row*CELL_SIZE + CELL_SIZE//2
+        y = TOP_BAR_HEIGHT + p.row*CELL_SIZE + CELL_SIZE//2
 
         pygame.draw.circle(screen,p.color,(x,y),CELL_SIZE//3)
 
+def draw_ui():
+    p1, p2 = simulation.players
+
+    p1_text = font.render(f"Player 1 Moves: {p1.moves}", True, TEXT_COLOR)
+    p2_text = font.render(f"Player 2 Moves: {p2.moves}", True, TEXT_COLOR)
+    step_text = font.render(f"Total Steps: {simulation.stats.steps}", True, TEXT_COLOR)
+    help_text = font.render("SPACE = pause/resume   R = reset", True, TEXT_COLOR)
+
+    screen.blit(p1_text, (10, 10))
+    screen.blit(p2_text, (10, 35))
+    screen.blit(step_text, (220, 10))
+    screen.blit(help_text, (220, 35))
+
+
+def draw_meeting_message():
+    if simulation.finished:
+        msg_surface = big_font.render(simulation.message, True, MESSAGE_COLOR)
+        msg_rect = msg_surface.get_rect(center=(WIDTH // 2, 75))
+        screen.blit(msg_surface, msg_rect)
 
 while True:
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
 
-    if not simulation.finished:
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_r:
+                simulation.reset()
+                running_simulation = True
+
+            if event.key == pygame.K_SPACE and not simulation.finished:
+                running_simulation = not running_simulation
+
+    if running_simulation and not simulation.finished:
         simulation.step()
 
-    screen.fill((30,120,30))
+    screen.fill(BG_COLOR)
 
     draw_grid()
     draw_players()
+    draw_ui()
+    draw_meeting_message()
 
     pygame.display.flip()
-
     clock.tick(5)
