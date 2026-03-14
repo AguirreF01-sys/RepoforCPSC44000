@@ -9,10 +9,14 @@ from game.simulation import Simulation
 CELL_SIZE = 60
 GRID_SIZE = 6
 
-TOP_BAR_HEIGHT = 80 # space for counters and messages
+TOP_BAR_HEIGHT = 140 # space for counters and messages
+SIDE_PADDING = 40
 
-WIDTH = GRID_SIZE * CELL_SIZE
-HEIGHT = GRID_SIZE * CELL_SIZE + TOP_BAR_HEIGHT
+GRID_WIDTH = GRID_SIZE * CELL_SIZE
+GRID_HEIGHT = GRID_SIZE * CELL_SIZE
+
+WIDTH = GRID_WIDTH + SIDE_PADDING * 2
+HEIGHT = GRID_HEIGHT + TOP_BAR_HEIGHT
 
 BG_COLOR = (34, 139, 34)
 GRID_COLOR = (200, 200, 200)
@@ -49,7 +53,7 @@ def draw_grid():
         for c in range(GRID_SIZE):
 
             rect = pygame.Rect(
-                c*CELL_SIZE,
+                SIDE_PADDING + c*CELL_SIZE,
                 TOP_BAR_HEIGHT + r * CELL_SIZE, # Adjust for top bar
                 CELL_SIZE,
                 CELL_SIZE
@@ -62,7 +66,7 @@ def draw_players():
 
     for p in simulation.players:
 
-        x = p.col*CELL_SIZE + CELL_SIZE//2
+        x = SIDE_PADDING + p.col*CELL_SIZE + CELL_SIZE//2
         y = TOP_BAR_HEIGHT + p.row*CELL_SIZE + CELL_SIZE//2
 
         pygame.draw.circle(screen,p.color,(x,y),CELL_SIZE//3)
@@ -75,16 +79,16 @@ def draw_ui():
     step_text = font.render(f"Total Steps: {simulation.stats.steps}", True, TEXT_COLOR)
     help_text = font.render("SPACE = pause/resume   R = reset", True, TEXT_COLOR)
 
-    screen.blit(p1_text, (10, 10))
-    screen.blit(p2_text, (10, 35))
-    screen.blit(step_text, (220, 10))
-    screen.blit(help_text, (220, 35))
+    screen.blit(p1_text, (20, 10))
+    screen.blit(p2_text, (20, 35))
+    screen.blit(step_text, (20, 60))
+    screen.blit(help_text, (20, 85))
 
 
 def draw_meeting_message():
     if simulation.finished:
         msg_surface = big_font.render(simulation.message, True, MESSAGE_COLOR)
-        msg_rect = msg_surface.get_rect(center=(WIDTH // 2, 75))
+        msg_rect = msg_surface.get_rect(center=(WIDTH // 2, TOP_BAR_HEIGHT//2))
         screen.blit(msg_surface, msg_rect)
 
 while True:
