@@ -26,6 +26,8 @@ def draw_game_screen(
     font,
     pause_button,
     reset_button,
+    player1_img,
+    player2_img,
 ):
     screen.fill((34, 139, 34))
 
@@ -55,7 +57,13 @@ def draw_game_screen(
     for p in simulation.players:
         x = side_padding + p.col * cell_size + cell_size // 2
         y = top_bar_height + p.row * cell_size + cell_size // 2
-        pygame.draw.circle(screen, p.color, (x, y), cell_size // 3)
+        if p.player_id == 1:
+            img = player1_img
+        else:
+            img = player2_img
+
+        rect = img.get_rect(center=(x, y))
+        screen.blit(img, rect)
 
 
 def draw_celebration_screen(screen, width, height, title_font, text_font, simulation, play_again_button, exit_button):

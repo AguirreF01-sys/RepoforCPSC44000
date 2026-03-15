@@ -10,6 +10,7 @@ from ui.screens import draw_title_screen, draw_game_screen, draw_celebration_scr
 # 6 by 6 grid, each cell is 60 pixels
 CELL_SIZE = 60
 GRID_SIZE = 6
+ICON_SIZE = int(CELL_SIZE * 0.8) # Player icons will be 80% of cell size for better fit
 
 TOP_BAR_HEIGHT = 140 # space for counters and messages
 SIDE_PADDING = 40
@@ -26,6 +27,10 @@ TEXT_COLOR = (255, 255, 255)
 
 
 pygame.init()
+player1_img = pygame.image.load("assets/player1.jpg")
+player2_img = pygame.image.load("assets/player2.jpg")
+player1_img = pygame.transform.smoothscale(player1_img, (ICON_SIZE, ICON_SIZE))
+player2_img = pygame.transform.smoothscale(player2_img, (ICON_SIZE, ICON_SIZE))
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Wandering in the Woods")
 clock = pygame.time.Clock()
@@ -43,7 +48,7 @@ p2 = Player(2, GRID_SIZE - 1, GRID_SIZE - 1, (0, 0, 255))
 simulation = Simulation(grid, [p1,p2])
 
 current_screen = "title"
-running_simulation = True
+running_simulation = False
 
 start_button = Button((WIDTH // 2 - 80, HEIGHT // 2, 160, 50), "Start", font, BUTTON_COLOR, TEXT_COLOR)
 pause_button = Button((WIDTH - 180, 20, 140, 40), "Pause", font, BUTTON_COLOR, TEXT_COLOR)
@@ -105,6 +110,8 @@ while True:
             font,
             pause_button,
             reset_button,
+            player1_img,
+            player2_img,
         )
 
     elif current_screen == "celebration":
