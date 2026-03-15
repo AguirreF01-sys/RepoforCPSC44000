@@ -4,6 +4,8 @@ import sys
 from game.grid import Grid
 from game.player import Player
 from game.simulation import Simulation
+from ui.button import Button
+from ui.screens import draw_title_screen, draw_game_screen, draw_celebration_screen
 
 # 6 by 6 grid, each cell is 60 pixels
 CELL_SIZE = 60
@@ -19,20 +21,15 @@ WIDTH = GRID_WIDTH + SIDE_PADDING * 2
 HEIGHT = GRID_HEIGHT + TOP_BAR_HEIGHT
 
 BG_COLOR = (34, 139, 34)
-GRID_COLOR = (200, 200, 200)
+BUTTON_COLOR = (60, 160, 60)
 TEXT_COLOR = (255, 255, 255)
-MESSAGE_COLOR = (255, 215, 0)
 
 
 pygame.init()
-
-# Set up the display
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Wandering in the Woods")
-
 clock = pygame.time.Clock()
 
-# Create the simulation
 font = pygame.font.SysFont(None, 30)
 big_font = pygame.font.SysFont(None, 48)
 
@@ -45,51 +42,14 @@ p2 = Player(2, GRID_SIZE - 1, GRID_SIZE - 1, (0, 0, 255))
 
 simulation = Simulation(grid, [p1,p2])
 
+current_screen = "title"
 running_simulation = True
 
-def draw_grid():
-
-    for r in range(GRID_SIZE):
-        for c in range(GRID_SIZE):
-
-            rect = pygame.Rect(
-                SIDE_PADDING + c*CELL_SIZE,
-                TOP_BAR_HEIGHT + r * CELL_SIZE, # Adjust for top bar
-                CELL_SIZE,
-                CELL_SIZE
-            )
-
-            pygame.draw.rect(screen,GRID_COLOR,rect,1)
-
-
-def draw_players():
-
-    for p in simulation.players:
-
-        x = SIDE_PADDING + p.col*CELL_SIZE + CELL_SIZE//2
-        y = TOP_BAR_HEIGHT + p.row*CELL_SIZE + CELL_SIZE//2
-
-        pygame.draw.circle(screen,p.color,(x,y),CELL_SIZE//3)
-
-def draw_ui():
-    p1, p2 = simulation.players
-
-    p1_text = font.render(f"Player 1 Moves: {p1.moves}", True, TEXT_COLOR)
-    p2_text = font.render(f"Player 2 Moves: {p2.moves}", True, TEXT_COLOR)
-    step_text = font.render(f"Total Steps: {simulation.stats.steps}", True, TEXT_COLOR)
-    help_text = font.render("SPACE = pause/resume   R = reset", True, TEXT_COLOR)
-
-    screen.blit(p1_text, (20, 10))
-    screen.blit(p2_text, (20, 35))
-    screen.blit(step_text, (20, 60))
-    screen.blit(help_text, (20, 85))
-
-
-def draw_meeting_message():
-    if simulation.finished:
-        msg_surface = big_font.render(simulation.message, True, MESSAGE_COLOR)
-        msg_rect = msg_surface.get_rect(center=(WIDTH // 2, TOP_BAR_HEIGHT//2))
-        screen.blit(msg_surface, msg_rect)
+start_button = Button((WIDTH // 2 - 80, HEIGHT // 2, 160, 50), "Start", font, BUTTON_COLOR, TEXT_COLOR)
+pause_button = Button((WIDTH - 180, 20, 140, 40), "Pause", font, BUTTON_COLOR, TEXT_COLOR)
+reset_button = Button((WIDTH - 180, 70, 140, 40), "Reset", font, BUTTON_COLOR, TEXT_COLOR)
+play_again_button = Button((WIDTH // 2 - 100, HEIGHT // 2 + 100, 200, 50), "Play Again", font, BUTTON_COLOR, TEXT_COLOR)
+exit_button = Button((WIDTH // 2 - 100, HEIGHT // 2 + 170, 200, 50), "Exit", font, BUTTON_COLOR, TEXT_COLOR)
 
 while True:
     for event in pygame.event.get():
@@ -97,23 +57,58 @@ while True:
             pygame.quit()
             sys.exit()
 
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_r:
+        if current_screen == "title":
+            if start_button.is_clicked(event):
                 simulation.reset()
                 running_simulation = True
+                current_screen = "game"
 
-            if event.key == pygame.K_SPACE and not simulation.finished:
+        elif current_screen == "game":
+            if pause_button.is_clicked(event): # Toggle simulation running state on pause button click
                 running_simulation = not running_simulation
+                if running_simulation:
+                    pause_button.set_text("Pause")
+                else:
+                    pause_button.set_text("Run")
 
-    if running_simulation and not simulation.finished:
+            if reset_button.is_clicked(event):
+                simulation.reset()
+                running_simulation = False
+
+        elif current_screen == "celebration":
+            if play_again_button.is_clicked(event):
+                simulation.reset()
+                running_simulation = True
+                current_screen = "game"
+            if exit_button.is_clicked(event):
+                pygame.quit()
+                sys.exit()
+
+    if current_screen == "game" and running_simulation and not simulation.finished:
         simulation.step()
 
-    screen.fill(BG_COLOR)
+    if current_screen == "game" and simulation.finished:
+        current_screen = "celebration"
 
-    draw_grid()
-    draw_players()
-    draw_ui()
-    draw_meeting_message()
+    if current_screen == "title":
+        draw_title_screen(screen, WIDTH, HEIGHT, big_font, font, start_button)
+
+    elif current_screen == "game":
+        draw_game_screen(
+            screen,
+            simulation,
+            WIDTH,
+            TOP_BAR_HEIGHT,
+            SIDE_PADDING,
+            GRID_SIZE,
+            CELL_SIZE,
+            font,
+            pause_button,
+            reset_button,
+        )
+
+    elif current_screen == "celebration":
+        draw_celebration_screen(screen, WIDTH, HEIGHT, big_font, font, simulation, play_again_button, exit_button)
 
     pygame.display.flip()
     clock.tick(5)
