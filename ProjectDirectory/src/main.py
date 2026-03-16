@@ -7,6 +7,10 @@ from game.simulation import Simulation
 from ui.button import Button
 from ui.screens import draw_title_screen, draw_game_screen, draw_celebration_screen
 
+from music import init_music
+from balloons import Balloon
+balloons = []
+
 # 6 by 6 grid, each cell is 60 pixels
 CELL_SIZE = 60
 GRID_SIZE = 6
@@ -27,6 +31,7 @@ TEXT_COLOR = (255, 255, 255)
 
 
 pygame.init()
+celebration_music = init_music()
 player1_img = pygame.image.load("assets/player1.jpg")
 player2_img = pygame.image.load("assets/player2.jpg")
 player1_img = pygame.transform.smoothscale(player1_img, (ICON_SIZE, ICON_SIZE))
@@ -94,6 +99,8 @@ while True:
 
     if current_screen == "game" and simulation.finished:
         current_screen = "celebration"
+        balloons = [Balloon(WIDTH, HEIGHT) for _ in range(12)]
+        celebration_music.play()
 
     if current_screen == "title":
         draw_title_screen(screen, WIDTH, HEIGHT, big_font, font, start_button)
@@ -115,7 +122,7 @@ while True:
         )
 
     elif current_screen == "celebration":
-        draw_celebration_screen(screen, WIDTH, HEIGHT, big_font, font, simulation, play_again_button, exit_button)
+        draw_celebration_screen(screen, WIDTH, HEIGHT, big_font, font, simulation, play_again_button, exit_button, balloons)
 
     pygame.display.flip()
     clock.tick(5)

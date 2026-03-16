@@ -66,8 +66,12 @@ def draw_game_screen(
         screen.blit(img, rect)
 
 
-def draw_celebration_screen(screen, width, height, title_font, text_font, simulation, play_again_button, exit_button):
+def draw_celebration_screen(screen, width, height, title_font, text_font, simulation, play_again_button, exit_button, balloons):
     screen.fill((34, 139, 34))
+
+    for balloon in balloons:
+        balloon.update()
+        balloon.draw(screen)
 
     title_text = title_font.render("They found each other!", True, (255, 215, 0))
 

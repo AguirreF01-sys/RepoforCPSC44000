@@ -1,5 +1,6 @@
 #balloons
 
+import pygame
 import random
 import math
 
@@ -8,10 +9,10 @@ class Balloon:
     def __init__(self, screen_width, screen_height):
         self.x = random.randint(20, screen_width - 20)
         self.y = screen_height + random.randint(0, 100)  # start below screen
-        self.speed = random.uniform(1.5, 3.5)
+        self.speed = random.uniform(4.5*2, 7.0*2)
         self.wobble_offset = random.uniform(0, 2 * math.pi)
         self.wobble_speed = random.uniform(0.05, 0.1)
-        self.wobble_amount = random.uniform(10, 25)
+        self.wobble_amount = random.uniform(12, 28)
         self.color = random.choice([
             (255, 80, 80),   # red
             (80, 80, 255),   # blue
@@ -26,7 +27,7 @@ class Balloon:
     def update(self):
         self.y -= self.speed
         self.tick += self.wobble_speed
-        self.x += math.sin(self.tick + self.wobble_offset) * 1.5
+        self.x += math.sin(self.tick + self.wobble_offset) * 2.5
 
     def draw(self, surface):
         ix, iy = int(self.x), int(self.y)
