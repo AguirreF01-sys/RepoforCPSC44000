@@ -77,6 +77,6 @@ def init_music():
     pygame.mixer.init(frequency=SAMPLE_RATE, size=-16, channels=2, buffer=512)
 
     game_music = build_song(GAME_SONG, beat=0.35, volume=0.18, wave="sine")
-    celebration_music = build_song(CELEBRATION_SONG, beat=0.22, volume=0.25, wave="square")
+    celebration_music = build_song(CELEBRATION_SONG, beat=0.22, volume=0.15, wave="square")
 
     return game_music, celebration_music
