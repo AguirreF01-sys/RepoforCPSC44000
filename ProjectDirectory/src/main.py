@@ -31,7 +31,8 @@ TEXT_COLOR = (255, 255, 255)
 
 
 pygame.init()
-celebration_music = init_music()
+game_music, celebration_music = init_music()
+game_music_playing = False
 player1_img = pygame.image.load("assets/player1.jpg")
 player2_img = pygame.image.load("assets/player2.jpg")
 player1_img = pygame.transform.smoothscale(player1_img, (ICON_SIZE, ICON_SIZE))
@@ -72,6 +73,9 @@ while True:
                 simulation.reset()
                 running_simulation = True
                 current_screen = "game"
+                if not game_music_playing:
+                    game_music.play(loops=-1)
+                    game_music_playing = True
 
         elif current_screen == "game":
             if pause_button.is_clicked(event): # Toggle simulation running state on pause button click
@@ -84,13 +88,18 @@ while True:
             if reset_button.is_clicked(event):
                 simulation.reset()
                 running_simulation = False
+                pause_button.set_text("Run")
 
         elif current_screen == "celebration":
             if play_again_button.is_clicked(event):
                 simulation.reset()
                 running_simulation = True
                 current_screen = "game"
+                if not game_music_playing:
+                    game_music.play(loops=-1)
+                    game_music_playing = True
             if exit_button.is_clicked(event):
+                pygame.mixer.stop()
                 pygame.quit()
                 sys.exit()
 
@@ -100,6 +109,8 @@ while True:
     if current_screen == "game" and simulation.finished:
         current_screen = "celebration"
         balloons = [Balloon(WIDTH, HEIGHT) for _ in range(12)]
+        game_music.stop()
+        game_music_playing = False
         celebration_music.play()
 
     if current_screen == "title":

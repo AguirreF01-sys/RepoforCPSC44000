@@ -4,7 +4,7 @@ import numpy as np
 
 SAMPLE_RATE = 44100
 
-def make_tone(freq, duration, volume=0.3, wave="square"):
+def make_tone(freq, duration, volume=0.3, wave="sine"):
     """Generate a numpy audio buffer for a single tone."""
     frames = int(SAMPLE_RATE * duration)
     t = np.linspace(0, duration, frames, endpoint=False)
@@ -37,10 +37,14 @@ NOTE = {
     "REST": 0
 }
 
+GAME_SONG = [
+    ("C4", 1), ("E4", 1), ("G4", 1), ("E4", 1),
+    ("D4", 1), ("F4", 1), ("A4", 1), ("F4", 1),
+]
+
 # "If You're Happy and You Know It"
 # (note, duration_in_beats)  — beat = 0.22s at this tempo
-BEAT = 0.22
-SONG = [
+CELEBRATION_SONG = [
     ("G4",1),("G4",1),("G4",1),("E4",1.5),("G4",0.5),
     ("G4",1),("E4",1.5),("G4",0.5),("G4",1),("G4",1),
     ("B4",1),("B4",1),("A4",1),("G4",1),("A4",1),("G4",2),
@@ -51,15 +55,15 @@ SONG = [
     ("A4",1),("G4",1),("A4",1),("G4",2),
 ]
 
-def build_song():
+def build_song(song, beat=0.22, volume=0.25, wave="square"):
     """Stitch all notes into one audio buffer and return a Sound."""
     parts = []
-    for note, beats in SONG:
-        dur = beats * BEAT
+    for note, beats in song:
+        dur = beats * beat
         if note == "REST":
             parts.append(make_silence(dur))
         else:
-            parts.append(make_tone(NOTE[note], dur))
+            parts.append(make_tone(NOTE[note], dur, volume=volume, wave=wave))
         parts.append(make_silence(0.02))  # tiny gap between notes
 
     full = np.concatenate(parts, axis=0)
@@ -71,4 +75,8 @@ def build_song():
 def init_music():
     """Call once after pygame.init(). Returns a Sound object."""
     pygame.mixer.init(frequency=SAMPLE_RATE, size=-16, channels=2, buffer=512)
-    return build_song()
+
+    game_music = build_song(GAME_SONG, beat=0.35, volume=0.18, wave="sine")
+    celebration_music = build_song(CELEBRATION_SONG, beat=0.22, volume=0.25, wave="square")
+
+    return game_music, celebration_music
